@@ -1,0 +1,40 @@
+
+#This will create this metric in all the tiers, under this path
+metricPrefix: Custom Metrics|Memcached
+
+#This will create it in specific Tier. Replace <TIER_NAME>
+#metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|Memcached
+
+# List of Memcached Servers
+servers:
+  - server: "localhost:11211"
+    displayName: localhost
+
+
+#timeout in ms to get data for all the servers
+timeout: 60000
+numberOfThreads: 5
+
+# The performance metrics exposed by Memcached stats command are mainly counters. If reported as is, they just represent
+# an ever-increasing value. To make these metrics more useful delta from the previous run is calculated and reported as the
+# default behavior. List the metrics in "ignoreDelta", if delta calculation should be avoided for any metric.
+ignoreDelta: [
+]
+ignoreMetric: [pid, time]
+
+controllerInfo:
+  controllerHost: ""
+  controllerPort: 8090
+  account: ""
+  username: ""
+  password: ""
+  encryptedPassword: ""
+  controllerSslEnabled: false
+  enableOrchestration: false
+  uniqueHostId: ""
+  accountAccessKey: ""
+  machinePath: ""
+  simEnabled: true
+  applicationName: ""
+  tierName: ""
+  nodeName: ""
