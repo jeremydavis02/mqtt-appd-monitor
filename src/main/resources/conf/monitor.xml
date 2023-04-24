@@ -11,7 +11,7 @@
     <description>MQTT Monitoring Extension</description>
     <monitor-configuration></monitor-configuration>
     <monitor-run-task>
-        <execution-style>periodic</execution-style>
+        <execution-style>continuous</execution-style>
         <execution-frequency-in-seconds>60</execution-frequency-in-seconds>
         <name>MQTT Monitor Run task</name>
         <display-name>MQTT Monitor Run task</display-name>

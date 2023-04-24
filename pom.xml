@@ -21,9 +21,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-        <target.dir>${project.build.directory}/MemcachedMonitor</target.dir>
+        <target.dir>${project.build.directory}/MqttMonitor</target.dir>
         <lib.dir>${basedir}/lib</lib.dir>
-        <target.name>MemcachedMonitor</target.name>
+        <target.name>MqttMonitor</target.name>
     </properties>
 
     <dependencies>
@@ -163,8 +163,6 @@
             <url>https://github.com/Appdynamics/maven-repo/raw/master/releases</url>
         </repository>
     </repositories>
-    <scm>
-        <connection>scm:git:https://github.com/Appdynamics/memcached-monitoring-extension.git</connection>
-    </scm>
+
 
 </project>
