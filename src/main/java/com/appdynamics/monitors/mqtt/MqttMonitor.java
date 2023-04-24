@@ -18,17 +18,11 @@ import com.appdynamics.extensions.util.AssertUtils;
 import com.appdynamics.extensions.memcached.config.Configuration;
 import com.appdynamics.extensions.memcached.config.Server;
 
-import com.google.common.base.Strings;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static com.appdynamics.extensions.memcached.Constant.*;
 
@@ -37,10 +31,10 @@ import static com.appdynamics.extensions.memcached.Constant.*;
 /**
  * An entry point into AppDynamics extensions.
  */
-public class MemcachedMonitor extends ABaseMonitor {
+public class MqttMonitor extends ABaseMonitor {
 
     public static final String CONFIG_ARG = "config-file";
-    public static final Logger logger = ExtensionsLoggerFactory.getLogger(MemcachedMonitor.class);
+    public static final Logger logger = ExtensionsLoggerFactory.getLogger(MqttMonitor.class);
     public static final String METRICS_COLLECTION_SUCCESSFUL = "Metrics Collection Successful";
     public static final String FAILED = "0";
     public static final String SUCCESS = "1";
