@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
+import com.appdynamics.monitors.mqtt.config.MetricTopic;
 import com.appdynamics.monitors.mqtt.config.Server;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttActionListener;
@@ -19,6 +21,7 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttPersistenceException;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
+import org.slf4j.Logger;
 
 
 public class MqttV5Executor implements MqttCallback {
@@ -36,6 +39,8 @@ public class MqttV5Executor implements MqttCallback {
     final Thread mainThread = Thread.currentThread();
     static volatile boolean keepRunning = true;
 
+    public static final Logger logger = ExtensionsLoggerFactory.getLogger(MqttV5Executor.class);
+
     /**
      * Initialises the MQTTv5 Executor
      *
@@ -50,14 +55,14 @@ public class MqttV5Executor implements MqttCallback {
      * @param actionTimeout
      *            - How long to wait to complete an action before failing.
      */
-    public MqttV5Executor(Server serverConfig, Mode mode, boolean debug, boolean quiet, int actionTimeout) {
+    public MqttV5Executor(Server serverConfig, MetricTopic metricTopic, Mode mode, boolean debug, boolean quiet, int actionTimeout) {
 
         this.connectionParams = new MqttV5Connection(serverConfig);
         /*if (mode == Mode.PUB) {
             this.publishParams = new MqttV5Publish(commandLineParams);
         }*/
         if (mode == Mode.SUB) {
-            this.subscribeParams = new MqttV5Subscribe(serverConfig);
+            this.subscribeParams = metricTopic.getSubscribeObj();
         }
         this.debug = debug;
         this.quiet = quiet;
@@ -99,24 +104,7 @@ public class MqttV5Executor implements MqttCallback {
 
     }
 
-    /**
-     * Simple helper function to publish a message.
-     *
-     * @param payload
-     * @param qos
-     * @param retain
-     * @param topic
-     * @throws MqttPersistenceException
-     * @throws MqttException
-     */
-    private void publishMessage(byte[] payload, int qos, boolean retain, String topic)
-            throws MqttPersistenceException, MqttException {
-        MqttMessage v5Message = new MqttMessage(payload);
-        v5Message.setQos(qos);
-        v5Message.setRetained(retain);
-        IMqttToken deliveryToken = v5Client.publish(topic, v5Message);
-        deliveryToken.waitForCompletion(actionTimeout);
-    }
+
 
     /**
      * Log a message to the console, nothing fancy.
@@ -126,7 +114,7 @@ public class MqttV5Executor implements MqttCallback {
      */
     private void logMessage(String message, boolean isDebug) {
         if ((this.debug == true && isDebug == true) || isDebug == false) {
-            System.out.println(message);
+            logger.debug(message);
         }
     }
 
@@ -137,7 +125,7 @@ public class MqttV5Executor implements MqttCallback {
      */
     private void logError(String error) {
         if (this.quiet == false) {
-            System.err.println(error);
+            logger.error(error);
         }
     }
 

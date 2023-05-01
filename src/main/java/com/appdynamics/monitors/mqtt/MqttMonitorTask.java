@@ -5,6 +5,7 @@ import com.appdynamics.extensions.MetricWriteHelper;
 import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.appdynamics.monitors.mqtt.config.Configuration;
+import com.appdynamics.monitors.mqtt.config.MetricTopic;
 import com.appdynamics.monitors.mqtt.config.Server;
 import com.appdynamics.extensions.metrics.DeltaMetricsCalculator;
 
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -25,15 +27,14 @@ public class MqttMonitorTask implements AMonitorTaskRunnable {
     private final MonitorContextConfiguration contextConfiguration;
     private final String metricPathPrefix;
     private final Configuration config;
-    //private InstanceMetric server_stats;
-    private DeltaMetricsCalculator deltaMetricsCalculator;
-    public MqttMonitorTask(MonitorContextConfiguration contextConfiguration, MetricWriteHelper metricWriteHelper, Server server, Configuration config, DeltaMetricsCalculator deltaMetricsCalculator) {
+    private ArrayList<MqttV5Executor> topic_listeners;
+
+    public MqttMonitorTask(MonitorContextConfiguration contextConfiguration, MetricWriteHelper metricWriteHelper, Server server, Configuration config) {
         this.server = server;
         this.contextConfiguration = contextConfiguration;
         this.metricWriteHelper = metricWriteHelper;
         this.metricPathPrefix = this.contextConfiguration.getMetricPrefix() + METRIC_SEPARATOR + server.getDisplayName() + METRIC_SEPARATOR;
         this.config = config;
-        this.deltaMetricsCalculator = deltaMetricsCalculator;
     }
 
     @Override
@@ -45,11 +46,12 @@ public class MqttMonitorTask implements AMonitorTaskRunnable {
     public void run() {
         //get metrics
         try {
-            //InstanceMetric mc_server_metrics = collectMetrics();
-            //this.metricWriteHelper.transformAndPrintMetrics(mc_server_metrics.getAllMetrics());
+            for (MetricTopic topic : this.server.getTopics()){
+
+            }
         }
         catch(Exception e){
-            logger.error("Unable to collect memcached metrics ", e);
+            logger.error("Unable to collect mqtt metrics ", e);
         }
 
     }

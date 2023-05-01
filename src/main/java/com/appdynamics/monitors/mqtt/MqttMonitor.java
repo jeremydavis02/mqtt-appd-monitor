@@ -16,6 +16,7 @@ import com.appdynamics.extensions.metrics.DeltaMetricsCalculator;
 import com.appdynamics.extensions.util.AssertUtils;
 
 import com.appdynamics.monitors.mqtt.config.Configuration;
+import com.appdynamics.monitors.mqtt.config.MetricTopic;
 import com.appdynamics.monitors.mqtt.config.Server;
 
 import com.google.common.collect.Maps;
@@ -42,7 +43,7 @@ public class MqttMonitor extends ABaseMonitor {
     private MonitorContextConfiguration monitorContextConfiguration;
     private Map<String, ?> configYml = Maps.newHashMap();
     private Configuration config;
-    private DeltaMetricsCalculator deltaCalculator;
+
 
     @Override
     protected String getDefaultMetricPrefix() {
@@ -65,7 +66,7 @@ public class MqttMonitor extends ABaseMonitor {
     protected void initializeMoreStuff(Map<String, String> args) {
         monitorContextConfiguration = getContextConfiguration();
         configYml = monitorContextConfiguration.getConfigYml();
-        this.deltaCalculator = new DeltaMetricsCalculator(300); //todo vet whether needed for mqtt
+
     }
 
     @Override
@@ -78,8 +79,8 @@ public class MqttMonitor extends ABaseMonitor {
                     for (Server server : this.config.getServers()) {
                         AssertUtils.assertNotNull(server.getDisplayName(), CFG_DISPLAY_NAME + " can not be null in the config.yml");
                         AssertUtils.assertNotNull(server.getHost(), CFG_HOST + " can not be null in the config.yml");
-                        logger.info("Starting the Memcached Task for server : " + server.getDisplayName());
-                        MqttMonitorTask task = new MqttMonitorTask(this.monitorContextConfiguration, serviceProvider.getMetricWriteHelper(), server, this.config, this.deltaCalculator);
+                        logger.info("Starting the Mqtt Task for server : " + server.getDisplayName());
+                        MqttMonitorTask task = new MqttMonitorTask(this.monitorContextConfiguration, serviceProvider.getMetricWriteHelper(), server, this.config);
                         serviceProvider.submit(server.getDisplayName(), task);
                     }
                 }
@@ -88,7 +89,7 @@ public class MqttMonitor extends ABaseMonitor {
             }
         }
         catch (Exception e) {
-            logger.error("Memcached Extension can not proceed due to errors in the config.", e);
+            logger.error("Mqtt Extension can not proceed due to errors in the config.", e);
         }
     }
     private Configuration getConfig(){
@@ -99,18 +100,34 @@ public class MqttMonitor extends ABaseMonitor {
         List<Map<String, ?>> map_servers = this.getServers();
         ArrayList<Server> server_arr = new ArrayList<>();
         for (Map<String, ?> server : map_servers) {
-            server_arr.add(new Server() {{
+            Server single_server = new Server() {{
                 setHost((String) server.get(CFG_HOST));
                 setDisplayName((String) server.get(CFG_DISPLAY_NAME));
-                //todo add the rest of the parms per server config
-            }});
+                setClientID((String) server.get(CFG_CLIENT_ID));
+                setKeepAlive((int) server.get(CFG_KEEP_ALIVE));
+                setUsername((String) server.get(CFG_USERNAME));
+                setPassword((String) server.get(CFG_PASSWORD));
+                setQos((int) server.get(CFG_QOS));
+                setCleanSession((boolean) server.get(CFG_CLEAN_SESSION));
+                setAutomaticReconnect((boolean) server.get(CFG_AUTOMATIC_RECONNECT));
+
+            }};
+            ArrayList<MetricTopic> metricTopics = new ArrayList<>();
+            List<Map<String, ?>> topics = (List<Map<String, ?>>) server.get(CFG_TOPICS);
+            for (Map<String, ?> topic: topics){
+                MetricTopic metricTopic = new MetricTopic();
+                metricTopic.setMetric_name((String) topic.get(CFG_METRIC_NAME));
+                metricTopic.setMetric_topic((String) topic.get(CFG_METRIC_TOPIC));
+                metricTopic.setSubscribeObj(new MqttV5Subscribe(single_server, metricTopic));
+                metricTopics.add(metricTopic);
+            }
+            single_server.setTopics(metricTopics);
+            server_arr.add(single_server);
         }
         this.config = new Configuration() {{
             setMetricPrefix((String) configYml.get(CFG_METRIC_PREFIX));
             setServers(server_arr);
             Integer t = (Integer) configYml.get(CFG_TIMEOUT);
-            ArrayList<String> ignoreDeltas = (ArrayList<String>) configYml.get(CFG_IGNORE_DELTA);
-            ArrayList<String> ignoreMetrics = (ArrayList<String>) configYml.get(CFG_IGNORE_METRIC);
             setTimeout(t.longValue());
 
         }};

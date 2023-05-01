@@ -10,13 +10,15 @@ servers:
   #"MQTT broker URI to connect to. tcp://127.0.0.1:port(1883) or mqtt://127.0.0.1:port(1883).
   #Use ws:// for Websockets, wss:// for secure Websockets and ssl:// for TLS encrypted TCP connections."
   - host: "mqtt://127.0.0.1:1883"
-    verbose: false
+    verbose: true
     displayName: "localhost_test1" #will be used in metric browser so make sure unique
     clientID: "localtest_1" #unique id for client, if empty uses displayName and timestamp
     keepAlive: 60 #keep alive in seconds, if nothing set 60 is default
     username: #if broker requires set here
     password: #if broker requires set here
     qos: 0 #we don't want retention etc so valid values are 0, 1, 2
+    clean-session: true #client connects with clean session, we don't expect to pickup stored messages
+    automatic-reconnect: true #auto reconnect on which is likely what we always want for this
     topics: # a list of topics, we make configurable here, but it's likely following closely to the relevant sys topics outlined: https://github.com/mqtt/mqtt.org/wiki/SYS-Topics
       - metric_name: "subscription_count"
         metric_topic: "$SYS/broker/subscriptions/count"
@@ -26,8 +28,7 @@ servers:
         metric_topic: "$SYS/broker/load/connections/1min"
       - metric_name: "socket_load_1min"
         metric_topic: "$SYS/broker/load/sockets/1min"
-    clean-session: true #client connects with clean session, we don't expect to pickup stored messages
-    automatic-reconnect: true #auto reconnect on which is likely what we always want for this
+
 
 
 

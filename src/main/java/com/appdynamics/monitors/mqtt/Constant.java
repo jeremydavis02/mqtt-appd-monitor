@@ -12,10 +12,19 @@ public class Constant {
     public static final String CFG_DISPLAY_NAME = "displayName";
     public static final String CFG_SERVERS = "servers";
     public static final String CFG_HOST = "host";
+
+    public static final String CFG_CLIENT_ID = "clientID";
     public static final String CFG_METRIC_PREFIX = "metricPrefix";
     public static final String CFG_TIMEOUT = "timeout";
-    public static final String CFG_IGNORE_DELTA = "ignoreDelta";
-    public static final String CFG_IGNORE_METRIC = "ignoreMetric";
+    public static final String CFG_KEEP_ALIVE = "keepAlive";
+    public static final String CFG_USERNAME = "username";
+    public static final String CFG_PASSWORD = "password";
+    public static final String CFG_QOS = "qos";
+    public static final String CFG_CLEAN_SESSION = "clean-session";
+    public static final String CFG_AUTOMATIC_RECONNECT = "automatic-reconnect";
+    public static final String CFG_TOPICS = "topics";
+    public static final String CFG_METRIC_NAME = "metric_name";
+    public static final String CFG_METRIC_TOPIC = "metric_topic";
 
     static {
         MONITOR_NAME = "Mqtt Monitor";
