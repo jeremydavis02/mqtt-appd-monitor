@@ -11,7 +11,7 @@ public class Constant {
     public static String MONITOR_NAME;
     public static final String CFG_DISPLAY_NAME = "displayName";
     public static final String CFG_SERVERS = "servers";
-    public static final String CFG_SERVER = "host";
+    public static final String CFG_HOST = "host";
     public static final String CFG_METRIC_PREFIX = "metricPrefix";
     public static final String CFG_TIMEOUT = "timeout";
     public static final String CFG_IGNORE_DELTA = "ignoreDelta";

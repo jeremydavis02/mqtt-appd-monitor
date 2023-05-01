@@ -15,8 +15,8 @@ import com.appdynamics.extensions.TasksExecutionServiceProvider;
 import com.appdynamics.extensions.metrics.DeltaMetricsCalculator;
 import com.appdynamics.extensions.util.AssertUtils;
 
-import com.appdynamics.extensions.memcached.config.Configuration;
-import com.appdynamics.extensions.memcached.config.Server;
+import com.appdynamics.monitors.mqtt.config.Configuration;
+import com.appdynamics.monitors.mqtt.config.Server;
 
 import com.google.common.collect.Maps;
 
@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 
 import java.util.*;
 
-import static com.appdynamics.extensions.memcached.Constant.*;
+import static com.appdynamics.monitors.mqtt.Constant.*;
 
 
 
@@ -65,7 +65,7 @@ public class MqttMonitor extends ABaseMonitor {
     protected void initializeMoreStuff(Map<String, String> args) {
         monitorContextConfiguration = getContextConfiguration();
         configYml = monitorContextConfiguration.getConfigYml();
-        this.deltaCalculator = new DeltaMetricsCalculator(300);
+        this.deltaCalculator = new DeltaMetricsCalculator(300); //todo vet whether needed for mqtt
     }
 
     @Override
@@ -77,9 +77,9 @@ public class MqttMonitor extends ABaseMonitor {
                 if (this.config.getServers().size() > 0) {
                     for (Server server : this.config.getServers()) {
                         AssertUtils.assertNotNull(server.getDisplayName(), CFG_DISPLAY_NAME + " can not be null in the config.yml");
-                        AssertUtils.assertNotNull(server.getServer(), CFG_SERVER + " can not be null in the config.yml");
+                        AssertUtils.assertNotNull(server.getHost(), CFG_HOST + " can not be null in the config.yml");
                         logger.info("Starting the Memcached Task for server : " + server.getDisplayName());
-                        MemcachedMonitorTask task = new MemcachedMonitorTask(this.monitorContextConfiguration, serviceProvider.getMetricWriteHelper(), server, this.config, this.deltaCalculator);
+                        MqttMonitorTask task = new MqttMonitorTask(this.monitorContextConfiguration, serviceProvider.getMetricWriteHelper(), server, this.config, this.deltaCalculator);
                         serviceProvider.submit(server.getDisplayName(), task);
                     }
                 }
@@ -100,8 +100,9 @@ public class MqttMonitor extends ABaseMonitor {
         ArrayList<Server> server_arr = new ArrayList<>();
         for (Map<String, ?> server : map_servers) {
             server_arr.add(new Server() {{
-                setServer((String) server.get(CFG_SERVER));
+                setHost((String) server.get(CFG_HOST));
                 setDisplayName((String) server.get(CFG_DISPLAY_NAME));
+                //todo add the rest of the parms per server config
             }});
         }
         this.config = new Configuration() {{
@@ -111,8 +112,7 @@ public class MqttMonitor extends ABaseMonitor {
             ArrayList<String> ignoreDeltas = (ArrayList<String>) configYml.get(CFG_IGNORE_DELTA);
             ArrayList<String> ignoreMetrics = (ArrayList<String>) configYml.get(CFG_IGNORE_METRIC);
             setTimeout(t.longValue());
-            setIgnoreDelta(new HashSet<>(ignoreDeltas));
-            setIgnoreMetric(new HashSet<>(ignoreMetrics));
+
         }};
         return this.config;
     }

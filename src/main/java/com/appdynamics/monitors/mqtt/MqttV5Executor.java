@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.cli.CommandLine;
+import com.appdynamics.monitors.mqtt.config.Server;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttActionListener;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
@@ -24,7 +24,7 @@ import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 public class MqttV5Executor implements MqttCallback {
 
     MqttV5Connection connectionParams;
-    MqttV5Publish publishParams;
+    //MqttV5Publish publishParams;
     MqttV5Subscribe subscribeParams;
     boolean quiet = false;
     boolean debug = false;
@@ -39,8 +39,8 @@ public class MqttV5Executor implements MqttCallback {
     /**
      * Initialises the MQTTv5 Executor
      *
-     * @param line
-     *            - Command Line Parameters
+     * @param serverConfig
+     *            - Individual Server config from config.yml
      * @param mode
      *            - The mode to run in (PUB / SUB)
      * @param debug
@@ -50,14 +50,14 @@ public class MqttV5Executor implements MqttCallback {
      * @param actionTimeout
      *            - How long to wait to complete an action before failing.
      */
-    public MqttV5Executor(CommandLine commandLineParams, Mode mode, boolean debug, boolean quiet, int actionTimeout) {
+    public MqttV5Executor(Server serverConfig, Mode mode, boolean debug, boolean quiet, int actionTimeout) {
 
-        this.connectionParams = new MqttV5Connection(commandLineParams);
-        if (mode == Mode.PUB) {
+        this.connectionParams = new MqttV5Connection(serverConfig);
+        /*if (mode == Mode.PUB) {
             this.publishParams = new MqttV5Publish(commandLineParams);
-        }
+        }*/
         if (mode == Mode.SUB) {
-            this.subscribeParams = new MqttV5Subscribe(commandLineParams);
+            this.subscribeParams = new MqttV5Subscribe(serverConfig);
         }
         this.debug = debug;
         this.quiet = quiet;
@@ -79,49 +79,7 @@ public class MqttV5Executor implements MqttCallback {
             IMqttToken connectToken = v5Client.connect(connectionParams.getConOpts());
             connectToken.waitForCompletion(actionTimeout);
 
-
-            // Execute Action based on mode.
-            if (mode == Mode.PUB) {
-                if (publishParams.isStdInLine() == true) {
-                    logMessage(String.format("Publishing lines from STDIN to %s", publishParams.getTopic()), true);
-                    addShutdownHook();
-                    InputStreamReader isReader = new InputStreamReader(System.in);
-                    BufferedReader bufReader = new BufferedReader(isReader);
-
-                    while (keepRunning) {
-                        String inputStr = null;
-                        if ((inputStr = bufReader.readLine()) != null) {
-                            publishMessage(inputStr.getBytes(), this.publishParams.getQos(),
-                                    this.publishParams.isRetain(), this.publishParams.getTopic());
-                        }
-                    }
-                    disconnectClient();
-                    closeClientAndExit();
-                } else if(publishParams.isStdInWhole() == true) {
-                    logMessage(String.format("Publishing all input from STDIN to %s", publishParams.getTopic()), true);
-                    addShutdownHook();
-                    InputStreamReader isReader = new InputStreamReader(System.in);
-                    BufferedReader bufReader = new BufferedReader(isReader);
-
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    int inputChar;
-                    while((inputChar = bufReader.read()) != -1) {
-                        out.write(inputChar);
-                    }
-                    byte[] payload = out.toByteArray();
-                    publishMessage(payload, this.publishParams.getQos(), this.publishParams.isRetain(), this.publishParams.getTopic());
-                    disconnectClient();
-                    closeClientAndExit();
-                } else if(publishParams.getFile() != null) {
-                    String filename = publishParams.getFile();
-                    logMessage(String.format("Publishing file from %s to %s.", filename, publishParams.getTopic()), true);
-                    Path path = Paths.get(filename);
-                    byte[] data = Files.readAllBytes(path);
-                    publishMessage(data, this.publishParams.getQos(), this.publishParams.isRetain(), this.publishParams.getTopic());
-                    disconnectClient();
-                    closeClientAndExit();
-                }
-            } else if(mode == Mode.SUB) {
+            if(mode == Mode.SUB) {
                 logMessage(String.format("Subscribing to %s with QoS %d.", subscribeParams.getTopic(), subscribeParams.getQos()), true);
                 IMqttToken subToken = this.v5Client.subscribe(subscribeParams.getTopic(), subscribeParams.getQos());
                 subToken.waitForCompletion(actionTimeout);
@@ -133,7 +91,7 @@ public class MqttV5Executor implements MqttCallback {
                 closeClientAndExit();
             }
 
-        } catch (MqttException | IOException ex) {
+        } catch (MqttException ex) {
             logError(String.format("Exception occured whilst attempting to publish: %s", ex.getMessage()));
             ex.printStackTrace();
             closeClientAndExit();

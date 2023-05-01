@@ -1,22 +1,22 @@
 package com.appdynamics.monitors.mqtt;
-import org.apache.commons.cli.CommandLine;
+import com.appdynamics.monitors.mqtt.config.MetricTopic;
+import com.appdynamics.monitors.mqtt.config.Server;
+
 
 public class MqttV5Subscribe {
     private String topic = "world";
     private int qos = 0;
     private boolean verbose = false;
 
-    public MqttV5Subscribe(CommandLine commandLineParams) {
-        if (commandLineParams.hasOption("topic")) {
-            topic = commandLineParams.getOptionValue("topic");
+    public MqttV5Subscribe(Server serverConfig, MetricTopic metricTopic) {
+        topic = metricTopic.getMetric_topic();
+
+        if(serverConfig.hasQos()) {
+            qos = serverConfig.getQos();
         }
 
-        if(commandLineParams.hasOption("qos")) {
-            qos = Integer.parseInt(commandLineParams.getOptionValue("qos"));
-        }
-
-        if(commandLineParams.hasOption("verbose")) {
-            verbose = true;
+        if(serverConfig.hasVerbose()) {
+            verbose = serverConfig.getVerbose();
         }
     }
 

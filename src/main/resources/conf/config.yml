@@ -1,4 +1,4 @@
-
+enabled: false
 #This will create this metric in all the tiers, under this path
 metricPrefix: Custom Metrics|MqttBrokers
 
@@ -10,6 +10,7 @@ servers:
   #"MQTT broker URI to connect to. tcp://127.0.0.1:port(1883) or mqtt://127.0.0.1:port(1883).
   #Use ws:// for Websockets, wss:// for secure Websockets and ssl:// for TLS encrypted TCP connections."
   - host: "mqtt://127.0.0.1:1883"
+    verbose: false
     displayName: "localhost_test1" #will be used in metric browser so make sure unique
     clientID: "localtest_1" #unique id for client, if empty uses displayName and timestamp
     keepAlive: 60 #keep alive in seconds, if nothing set 60 is default
@@ -25,11 +26,7 @@ servers:
         metric_topic: "$SYS/broker/load/connections/1min"
       - metric_name: "socket_load_1min"
         metric_topic: "$SYS/broker/load/sockets/1min"
-    will-retain: false #TODO this is only for publishing so probably remove
-    will-payload: "I died" #TODO this is to notify other subscribers our client disconnected, probably remove for this purpose
-    will-topic: "localtest_1/status" #TODO this is to notify other subscribers our client disconnected, probably remove for this purpose
     clean-session: true #client connects with clean session, we don't expect to pickup stored messages
-    max-inflight: 10 #TODO default is 10, but this is for publishing so probably remove
     automatic-reconnect: true #auto reconnect on which is likely what we always want for this
 
 
