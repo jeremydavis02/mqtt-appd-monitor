@@ -2,6 +2,7 @@ package com.appdynamics.monitors.mqtt;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
 
+import com.appdynamics.monitors.mqtt.config.MetricTopic;
 import com.appdynamics.monitors.mqtt.config.Server;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -21,15 +22,16 @@ public class MqttV5Connection {
      *            - The individual server configuration from config.yml.
      * @throws URISyntaxException
      */
-    public MqttV5Connection(Server serverConfig) {
+    public MqttV5Connection(Server serverConfig, MetricTopic metricTopic) {
 
         // Get the Host URI
         if (serverConfig.hasHost()) {
             conOpts.setServerURIs(new String[] { serverConfig.getHost() });
+            this.hostURI = serverConfig.getHost();
         }
 
         if (serverConfig.hasClientID()) {
-            clientID = serverConfig.getClientID();
+            clientID = serverConfig.getClientID()+'_'+metricTopic.getMetric_name();
         }
 
         if (serverConfig.hasKeepAlive()) {
@@ -57,7 +59,7 @@ public class MqttV5Connection {
         if (clientID == null || clientID == "") {
             // No client ID provided, generate one from the process ID
             long pid = Thread.currentThread().getId(); //ProcessHandle.current().pid();
-            clientID = serverConfig.getDisplayName()+'_'+ new Timestamp(System.currentTimeMillis()).toString();
+            clientID = serverConfig.getDisplayName()+'_'+metricTopic.getMetric_name()+'_'+ new Timestamp(System.currentTimeMillis()).toString();
         }
 
 

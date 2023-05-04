@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 import static com.appdynamics.monitors.mqtt.Constant.*;
 
@@ -80,9 +81,16 @@ public class MqttMonitor extends ABaseMonitor {
                         AssertUtils.assertNotNull(server.getDisplayName(), CFG_DISPLAY_NAME + " can not be null in the config.yml");
                         AssertUtils.assertNotNull(server.getHost(), CFG_HOST + " can not be null in the config.yml");
                         logger.info("Starting the Mqtt Task for server : " + server.getDisplayName());
-                        MqttMonitorTask task = new MqttMonitorTask(this.monitorContextConfiguration, serviceProvider.getMetricWriteHelper(), server, this.config);
+                        //So we fire up a task for each server, this spins up a thread to the thread limit
+                        MqttMonitorTask task = new MqttMonitorTask(this, this.monitorContextConfiguration, server, this.config);
                         serviceProvider.submit(server.getDisplayName(), task);
                     }
+                }
+                CountDownLatch infiniteWait = new CountDownLatch(1);
+                try {
+                    infiniteWait.await();   //Will make this thread to wait till the CountDownLatch reaches to 0.
+                } catch (InterruptedException e) {
+                    logger.error("Failed to wait indefinitely ", e);
                 }
             } else {
                 logger.error("The config.yml is not loaded due to previous errors.The task will not run");
@@ -102,14 +110,15 @@ public class MqttMonitor extends ABaseMonitor {
         for (Map<String, ?> server : map_servers) {
             Server single_server = new Server() {{
                 setHost((String) server.get(CFG_HOST));
+                setVerbose((Boolean) server.get(CFG_VERBOSE));
                 setDisplayName((String) server.get(CFG_DISPLAY_NAME));
                 setClientID((String) server.get(CFG_CLIENT_ID));
-                setKeepAlive((int) server.get(CFG_KEEP_ALIVE));
+                setKeepAlive((Integer) server.get(CFG_KEEP_ALIVE));
                 setUsername((String) server.get(CFG_USERNAME));
                 setPassword((String) server.get(CFG_PASSWORD));
-                setQos((int) server.get(CFG_QOS));
-                setCleanSession((boolean) server.get(CFG_CLEAN_SESSION));
-                setAutomaticReconnect((boolean) server.get(CFG_AUTOMATIC_RECONNECT));
+                setQos((Integer) server.get(CFG_QOS));
+                setCleanSession((Boolean) server.get(CFG_CLEAN_SESSION));
+                setAutomaticReconnect((Boolean) server.get(CFG_AUTOMATIC_RECONNECT));
 
             }};
             ArrayList<MetricTopic> metricTopics = new ArrayList<>();
@@ -119,7 +128,9 @@ public class MqttMonitor extends ABaseMonitor {
                 metricTopic.setMetric_name((String) topic.get(CFG_METRIC_NAME));
                 metricTopic.setMetric_topic((String) topic.get(CFG_METRIC_TOPIC));
                 metricTopic.setSubscribeObj(new MqttV5Subscribe(single_server, metricTopic));
+                metricTopic.setMetricPath(configYml.get(CFG_METRIC_PREFIX) + single_server.getDisplayName() + Constant.METRIC_SEPARATOR);
                 metricTopics.add(metricTopic);
+                logger.debug("Metric Topic configuration added: "+metricTopic.toString());
             }
             single_server.setTopics(metricTopics);
             server_arr.add(single_server);

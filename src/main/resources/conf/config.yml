@@ -12,7 +12,7 @@ servers:
   - host: "mqtt://127.0.0.1:1883"
     verbose: true
     displayName: "localhost_test1" #will be used in metric browser so make sure unique
-    clientID: "localtest_1" #unique id for client, if empty uses displayName and timestamp
+    clientID: "localtest_1" #unique id for client, if empty uses displayName and timestamp and append metric name
     keepAlive: 60 #keep alive in seconds, if nothing set 60 is default
     username: #if broker requires set here
     password: #if broker requires set here

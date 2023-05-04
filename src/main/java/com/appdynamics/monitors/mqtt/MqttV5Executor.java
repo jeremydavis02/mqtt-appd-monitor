@@ -8,7 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.appdynamics.extensions.ABaseMonitor;
+import com.appdynamics.extensions.MetricWriteHelper;
+import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
+import com.appdynamics.extensions.metrics.Metric;
 import com.appdynamics.monitors.mqtt.config.MetricTopic;
 import com.appdynamics.monitors.mqtt.config.Server;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
@@ -23,17 +27,23 @@ import org.eclipse.paho.mqttv5.common.MqttPersistenceException;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
 
+import static com.appdynamics.monitors.mqtt.Constant.METRIC_SEPARATOR;
+
 
 public class MqttV5Executor implements MqttCallback {
 
     MqttV5Connection connectionParams;
     //MqttV5Publish publishParams;
     MqttV5Subscribe subscribeParams;
+    Server server; //to store server config reference
+    MetricTopic metricTopic; //to store topic config reference
+    MetricWriteHelper metricWriteHelper;
+    MetricWriter metricWriter;
     boolean quiet = false;
     boolean debug = false;
     MqttAsyncClient v5Client;
     Mode mode;
-    private int actionTimeout;
+    private long actionTimeout;
 
     // To allow for a graceful disconnect
     final Thread mainThread = Thread.currentThread();
@@ -55,19 +65,31 @@ public class MqttV5Executor implements MqttCallback {
      * @param actionTimeout
      *            - How long to wait to complete an action before failing.
      */
-    public MqttV5Executor(Server serverConfig, MetricTopic metricTopic, Mode mode, boolean debug, boolean quiet, int actionTimeout) {
+    public MqttV5Executor(ABaseMonitor monitor, Server serverConfig, MetricTopic metricTopic, Mode mode, long actionTimeout) {
 
-        this.connectionParams = new MqttV5Connection(serverConfig);
+        this.connectionParams = new MqttV5Connection(serverConfig, metricTopic);
         /*if (mode == Mode.PUB) {
             this.publishParams = new MqttV5Publish(commandLineParams);
         }*/
         if (mode == Mode.SUB) {
             this.subscribeParams = metricTopic.getSubscribeObj();
         }
-        this.debug = debug;
-        this.quiet = quiet;
+        this.debug = serverConfig.getVerbose();
+        this.quiet = false; //I don't think we want no error printing
         this.mode = mode;
         this.actionTimeout = actionTimeout;
+        //hold on to server and metric config references
+        this.server = serverConfig;
+        this.metricTopic = metricTopic;
+        //TODO this has to be a reference to the main Monitor class that extends ABaseMonitor so fix by passing down reference
+
+        this.metricWriter = monitor.getMetricWriter(
+                this.metricTopic.getMetricPath() + METRIC_SEPARATOR + this.metricTopic.getMetric_name(),
+                MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE,
+                MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE,
+                MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL
+        );
+
     }
 
     public void execute() {
@@ -190,10 +212,16 @@ public class MqttV5Executor implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         String messageContent = new String(message.getPayload());
+        //Unfortunately we get floats conversion will lose precision
+        Float f = Float.valueOf(messageContent);
+        Long l = f.longValue();
+        logMessage("MessageContent: '"+messageContent+"' with length: "+messageContent.length(), true);
+        //in theory on continuous running each instance of this executor should be able to do a metric writer call here
+        this.metricWriter.printMetric(l.toString());
         if (subscribeParams.isVerbose()) {
-            logMessage(String.format("%s %s", topic, messageContent), false);
+            logMessage(String.format("%s %s", topic, l.toString()), false);
         } else {
-            logMessage(messageContent, false);
+            logMessage(l.toString(), false);
         }
     }
 

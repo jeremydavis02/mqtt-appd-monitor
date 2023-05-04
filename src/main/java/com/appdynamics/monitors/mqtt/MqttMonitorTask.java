@@ -1,5 +1,6 @@
 package com.appdynamics.monitors.mqtt;
 
+import com.appdynamics.extensions.ABaseMonitor;
 import com.appdynamics.extensions.AMonitorTaskRunnable;
 import com.appdynamics.extensions.MetricWriteHelper;
 import com.appdynamics.extensions.conf.MonitorContextConfiguration;
@@ -23,18 +24,21 @@ import static com.appdynamics.monitors.mqtt.Constant.METRIC_SEPARATOR;
 public class MqttMonitorTask implements AMonitorTaskRunnable {
     public static final Logger logger = ExtensionsLoggerFactory.getLogger(MqttMonitorTask.class);
     private final Server server;
-    private final MetricWriteHelper metricWriteHelper;
+    private ABaseMonitor monitor;
     private final MonitorContextConfiguration contextConfiguration;
     private final String metricPathPrefix;
     private final Configuration config;
     private ArrayList<MqttV5Executor> topic_listeners;
+    private ArrayList<Thread> topic_threads;
 
-    public MqttMonitorTask(MonitorContextConfiguration contextConfiguration, MetricWriteHelper metricWriteHelper, Server server, Configuration config) {
+    public MqttMonitorTask(ABaseMonitor monitor, MonitorContextConfiguration contextConfiguration, Server server, Configuration config) {
         this.server = server;
         this.contextConfiguration = contextConfiguration;
-        this.metricWriteHelper = metricWriteHelper;
+        this.monitor = monitor;
         this.metricPathPrefix = this.contextConfiguration.getMetricPrefix() + METRIC_SEPARATOR + server.getDisplayName() + METRIC_SEPARATOR;
         this.config = config;
+        this.topic_listeners = new ArrayList<MqttV5Executor>();
+        this.topic_threads = new ArrayList<Thread>();
     }
 
     @Override
@@ -46,57 +50,24 @@ public class MqttMonitorTask implements AMonitorTaskRunnable {
     public void run() {
         //get metrics
         try {
-            for (MetricTopic topic : this.server.getTopics()){
-
+            for (MetricTopic topic : this.server.getTopics()) {
+                //for a given server we spin up an MQTTExecutor to subscribe to each metric topic listed
+                //this class is implementing the paho callback interface so acts as client and handler of
+                //messages
+                logger.debug("Creating subscriber for topic: "+topic.toString());
+                MqttV5Executor mqttV5Executor = new MqttV5Executor(this.monitor, this.server, topic, Mode.SUB, this.config.getTimeout());
+                Thread t = new Thread(mqttV5Executor::execute);
+                //mqttV5Executor.execute();
+                t.start();
+                logger.debug("Topic subscriber started: "+topic.toString());
+                this.topic_listeners.add(mqttV5Executor);
+                this.topic_threads.add(t);
             }
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             logger.error("Unable to collect mqtt metrics ", e);
         }
 
     }
 
-    /*private InstanceMetric collectMetrics() throws Exception {
-        MemcachedClient memcachedClient = null;
-        try {
-            memcachedClient = getMemcachedClient();
-
-            Map<InetSocketAddress, Map<String, String>> stats = memcachedClient.getStats(config.getTimeout());
-            //task structure is one server at a time so we don't really need anymore then the stats map
-            if(stats != null) {
-                Iterator<InetSocketAddress> it = stats.keySet().iterator();
-                if (it.hasNext()) {
-                    InetSocketAddress sockAddress = it.next();
-                    Map<String, String>statsmap = stats.get(sockAddress);
-                    InstanceMetric server_instance = new InstanceMetric(this.server.getDisplayName(), statsmap, this.server, this.config, this.deltaMetricsCalculator);
-                    server_instance.populateMetrics();
-                    this.server_stats = server_instance;
-                } else {
-                    logger.error("Unable to get stats for " + server.getServer());
-                }
-            }
-            return this.server_stats;
-        }
-        catch(Exception e){
-            logger.error("Unable to collect memcached metrics ", e);
-            throw e;
-        }
-        finally {
-            if (memcachedClient != null) {
-                memcachedClient.shutdown();
-            }
-        }
-    }*/
-
-    /**
-     * Builds a memcached client.
-     * @return MemcachedClient
-     * @throws IOException
-     */
-    /*private MqttClient getMemcachedClient() throws IOException {
-        String[] host_port = this.server.getServer().split(":");
-        XMemcachedClient client = new XMemcachedClient(host_port[0],Integer.parseInt(host_port[1]));
-        return client;
-    }
-*/
 }
+

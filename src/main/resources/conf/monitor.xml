@@ -20,10 +20,10 @@
         <execution-timeout-in-secs>60</execution-timeout-in-secs>
         <task-arguments>
             <!-- config file-->
-            <argument name="config-file" is-required="true" default-value="monitors/MQTTMonitor/config.yml" />
+            <argument name="config-file" is-required="true" default-value="monitors/MqttMonitor/config.yml" />
         </task-arguments>
         <java-task>
-            <classpath>mqtt-monitor.jar</classpath>
+            <classpath>mqtt-monitoring-extension.jar</classpath>
             <impl-class>com.appdynamics.monitors.mqtt.MqttMonitor</impl-class>
         </java-task>
     </monitor-run-task>
