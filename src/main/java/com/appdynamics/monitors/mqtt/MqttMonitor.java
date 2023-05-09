@@ -129,6 +129,26 @@ public class MqttMonitor extends ABaseMonitor {
                 metricTopic.setMetric_topic((String) topic.get(CFG_METRIC_TOPIC));
                 metricTopic.setSubscribeObj(new MqttV5Subscribe(single_server, metricTopic));
                 metricTopic.setMetricPath(configYml.get(CFG_METRIC_PREFIX) + Constant.METRIC_SEPARATOR + single_server.getDisplayName() + Constant.METRIC_SEPARATOR);
+                if(topic.containsKey(CFG_METRIC_TYPE)){
+                    metricTopic.setMetric_aggregation_type((String) topic.get(CFG_METRIC_TYPE));
+                }
+                if(topic.containsKey(CFG_METRIC_TIME_ROLL_UP)){
+                    metricTopic.setMetric_time_rollup_type((String) topic.get(CFG_METRIC_TIME_ROLL_UP));
+                }
+                if(topic.containsKey(CFG_METRIC_CLUSTER_ROLL_UP)){
+                    metricTopic.setMetric_cluster_rollup_type((String) topic.get(CFG_METRIC_CLUSTER_ROLL_UP));
+                }
+                //because we have a 300 second default we set this first if set before metric delta true
+                //due to that set method for delta true creates calc with seconds
+                //not as clean as a true factory class type thing but for now this should be only location
+                //where order of calls and object creation is anyway
+                if(topic.containsKey(CFG_METRIC_DELTA_CACHE_IN_SECONDS)){
+                    metricTopic.setDeltaCacheDuration((Integer) topic.get(CFG_METRIC_DELTA_CACHE_IN_SECONDS));
+                }
+                if(topic.containsKey(CFG_METRIC_DELTA)){
+                    metricTopic.setMetric_delta((Boolean) topic.get(CFG_METRIC_DELTA));
+                }
+
                 metricTopics.add(metricTopic);
                 logger.debug("Metric Topic configuration added: "+metricTopic.toString());
             }

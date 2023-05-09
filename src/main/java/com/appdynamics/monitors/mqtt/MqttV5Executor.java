@@ -1,32 +1,24 @@
 package com.appdynamics.monitors.mqtt;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.appdynamics.extensions.metrics.DeltaMetricsCalculator;
 import com.appdynamics.extensions.ABaseMonitor;
 import com.appdynamics.extensions.MetricWriteHelper;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
-import com.appdynamics.extensions.metrics.Metric;
 import com.appdynamics.monitors.mqtt.config.MetricTopic;
 import com.appdynamics.monitors.mqtt.config.Server;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
-import org.eclipse.paho.mqttv5.client.MqttActionListener;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
-import org.eclipse.paho.mqttv5.common.MqttPersistenceException;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
+
+import java.math.BigDecimal;
 
 import static com.appdynamics.monitors.mqtt.Constant.METRIC_SEPARATOR;
 
@@ -82,13 +74,13 @@ public class MqttV5Executor implements MqttCallback {
         //hold on to server and metric config references
         this.server = serverConfig;
         this.metricTopic = metricTopic;
-        //TODO need to make the agg/time options configurable
+
 
         this.metricWriter = monitor.getMetricWriter(
                 this.metricTopic.getMetricPath() + this.metricTopic.getMetric_name(),
-                MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE,
-                MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE,
-                MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL
+                this.metricTopic.getMetric_aggregation_type(),
+                this.metricTopic.getMetric_time_rollup_type(),
+                this.metricTopic.getMetric_cluster_rollup_type()
         );
 
     }
@@ -218,6 +210,13 @@ public class MqttV5Executor implements MqttCallback {
         Long l = f.longValue();
         logMessage("MessageContent: '"+messageContent+"' with length: "+messageContent.length(), true);
         //in theory on continuous running each instance of this executor should be able to do a metric writer call here
+        if(this.metricTopic.getMetric_delta()){
+            //this is a delta calculation
+            l = this.metricTopic.getDeltaMetricsCalculator()
+                    .calculateDelta(this.metricTopic.getMetricPath(), BigDecimal.valueOf(l))
+                    .longValue();
+        }
+
         this.metricWriter.printMetric(l.toString());
         if (subscribeParams.isVerbose()) {
             logMessage(String.format("%s %s", topic, l.toString()), false);

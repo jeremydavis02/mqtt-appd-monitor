@@ -25,6 +25,11 @@ public class Constant {
     public static final String CFG_TOPICS = "topics";
     public static final String CFG_METRIC_NAME = "metric_name";
     public static final String CFG_METRIC_TOPIC = "metric_topic";
+    public static final String CFG_METRIC_TYPE = "metric_type";
+    public static final String CFG_METRIC_TIME_ROLL_UP = "metric_time_roll_up";
+    public static final String CFG_METRIC_CLUSTER_ROLL_UP = "metric_cluster_roll_up";
+    public static final String CFG_METRIC_DELTA = "metric_delta";
+    public static final String CFG_METRIC_DELTA_CACHE_IN_SECONDS = "metric_delta_cache_in_seconds";
 
     static {
         MONITOR_NAME = "Mqtt Monitor";
