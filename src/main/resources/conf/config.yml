@@ -1,15 +1,15 @@
 enabled: false
 #This will create this metric in all the tiers, under this path
-metricPrefix: Custom Metrics|MqttBrokers
-
-#This will create it in specific Tier. Replace <TIER_NAME>
-#metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|Memcached
+#If you have server viz this works
+#metricPrefix: Custom Metrics|MqttBrokers
+#if no server viz need Tier name as component
+metricPrefix: Server|Component:MQTT_Monitoring|Custom Metrics|MqttBrokers
 
 # List of Memcached Servers
 servers:
-  #"MQTT broker URI to connect to. tcp://127.0.0.1:port(1883) or mqtt://127.0.0.1:port(1883).
+  #"MQTT broker URI to connect to. tcp://127.0.0.1:port(1883).
   #Use ws:// for Websockets, wss:// for secure Websockets and ssl:// for TLS encrypted TCP connections."
-  - host: "mqtt://127.0.0.1:1883"
+  - host: "tcp://127.0.0.1:1883"
     verbose: true
     displayName: "localhost_test1" #will be used in metric browser so make sure unique
     clientID: "localtest_1" #unique id for client, if empty uses displayName and timestamp and append metric name
@@ -22,12 +22,39 @@ servers:
     topics: # a list of topics, we make configurable here, but it's likely following closely to the relevant sys topics outlined: https://github.com/mqtt/mqtt.org/wiki/SYS-Topics
       - metric_name: "subscription_count"
         metric_topic: "$SYS/broker/subscriptions/count"
-      - metric_name: "messages_stored"
-        metric_topic: "$SYS/broker/messages/stored"
+        metric_type: "OBSERVATION"
+        metric_roll_up: "CURRENT"
+        metric_delta: false
+      - metric_name: "clients_total"
+        metric_topic: "$SYS/broker/clients/total"
+        metric_type: "OBSERVATION"
+        metric_roll_up: "CURRENT"
+        metric_delta: false
+      - metric_name: "messages_count"
+        metric_topic: "$SYS/broker/store/messages/count"
+        metric_type: "OBSERVATION"
+        metric_roll_up: "CURRENT"
+        metric_delta: false
+      - metric_name: "messages_received"
+        metric_topic: "$SYS/broker/messages/received"
+        metric_type: "OBSERVATION"
+        metric_roll_up: "CURRENT"
+        metric_delta: true
+      - metric_name: "messages_sent"
+        metric_topic: "$SYS/broker/messages/sent"
+        metric_type: "OBSERVATION"
+        metric_roll_up: "CURRENT"
+        metric_delta: true
       - metric_name: "connection_load_1min"
         metric_topic: "$SYS/broker/load/connections/1min"
+        metric_type: "AVERAGE"
+        metric_roll_up: "AVERAGE"
+        metric_delta: false
       - metric_name: "socket_load_1min"
         metric_topic: "$SYS/broker/load/sockets/1min"
+        metric_type: "AVERAGE"
+        metric_roll_up: "AVERAGE"
+        metric_delta: false
 
 
 

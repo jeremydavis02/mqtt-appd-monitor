@@ -128,7 +128,7 @@ public class MqttMonitor extends ABaseMonitor {
                 metricTopic.setMetric_name((String) topic.get(CFG_METRIC_NAME));
                 metricTopic.setMetric_topic((String) topic.get(CFG_METRIC_TOPIC));
                 metricTopic.setSubscribeObj(new MqttV5Subscribe(single_server, metricTopic));
-                metricTopic.setMetricPath(configYml.get(CFG_METRIC_PREFIX) + single_server.getDisplayName() + Constant.METRIC_SEPARATOR);
+                metricTopic.setMetricPath(configYml.get(CFG_METRIC_PREFIX) + Constant.METRIC_SEPARATOR + single_server.getDisplayName() + Constant.METRIC_SEPARATOR);
                 metricTopics.add(metricTopic);
                 logger.debug("Metric Topic configuration added: "+metricTopic.toString());
             }

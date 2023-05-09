@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.appdynamics.extensions.metrics.DeltaMetricsCalculator;
 import com.appdynamics.extensions.ABaseMonitor;
 import com.appdynamics.extensions.MetricWriteHelper;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
@@ -81,10 +82,10 @@ public class MqttV5Executor implements MqttCallback {
         //hold on to server and metric config references
         this.server = serverConfig;
         this.metricTopic = metricTopic;
-        //TODO this has to be a reference to the main Monitor class that extends ABaseMonitor so fix by passing down reference
+        //TODO need to make the agg/time options configurable
 
         this.metricWriter = monitor.getMetricWriter(
-                this.metricTopic.getMetricPath() + METRIC_SEPARATOR + this.metricTopic.getMetric_name(),
+                this.metricTopic.getMetricPath() + this.metricTopic.getMetric_name(),
                 MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE,
                 MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE,
                 MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL

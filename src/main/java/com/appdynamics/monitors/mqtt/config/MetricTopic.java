@@ -9,7 +9,36 @@ public class MetricTopic {
     private String metric_topic;
 
 
+
+    private String metric_time_rollup_type;
+    private String metric_aggregation_type;
+    private String metric_cluster_rollup_type;
+    
     private MqttV5Subscribe subscribeObj;
+
+    public String getMetric_time_rollup_type() {
+        return metric_time_rollup_type;
+    }
+
+    public void setMetric_time_rollup_type(String metric_time_rollup_type) {
+        this.metric_time_rollup_type = metric_time_rollup_type;
+    }
+
+    public String getMetric_aggregation_type() {
+        return metric_aggregation_type;
+    }
+
+    public void setMetric_aggregation_type(String metric_aggregation_type) {
+        this.metric_aggregation_type = metric_aggregation_type;
+    }
+
+    public String getMetric_cluster_rollup_type() {
+        return metric_cluster_rollup_type;
+    }
+
+    public void setMetric_cluster_rollup_type(String metric_cluster_rollup_type) {
+        this.metric_cluster_rollup_type = metric_cluster_rollup_type;
+    }
 
     public String getMetricPath() {
         return metricPath;
