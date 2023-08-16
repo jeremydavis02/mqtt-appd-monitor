@@ -3,7 +3,7 @@ enabled: false
 #If you have server viz this works
 #metricPrefix: Custom Metrics|MqttBrokers
 #if no server viz need Tier name as component
-metricPrefix: Server|Component:MQTT_Monitoring|Custom Metrics|MqttBrokers
+metricPrefix: Server|Component:OrionMQ|Custom Metrics|MqttBrokers
 
 # List of Memcached Servers
 servers:

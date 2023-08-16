@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 import com.appdynamics.monitors.mqtt.config.MetricTopic;
 import com.appdynamics.monitors.mqtt.config.Server;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
-import org.eclipse.paho.mqttv5.common.MqttMessage;
+
 
 public class MqttV5Connection {
 

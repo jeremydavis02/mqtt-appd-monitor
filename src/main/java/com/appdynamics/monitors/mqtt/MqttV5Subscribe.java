@@ -4,9 +4,9 @@ import com.appdynamics.monitors.mqtt.config.Server;
 
 
 public class MqttV5Subscribe {
-    private String topic = "world";
+    private final String topic;
     private int qos = 0;
-    private boolean verbose = false;
+
 
     public MqttV5Subscribe(Server serverConfig, MetricTopic metricTopic) {
         topic = metricTopic.getMetric_topic();
@@ -15,9 +15,6 @@ public class MqttV5Subscribe {
             qos = serverConfig.getQos();
         }
 
-        if(serverConfig.hasVerbose()) {
-            verbose = serverConfig.getVerbose();
-        }
     }
 
     public String getTopic() {
@@ -28,8 +25,5 @@ public class MqttV5Subscribe {
         return qos;
     }
 
-    public boolean isVerbose() {
-        return verbose;
-    }
 
 }

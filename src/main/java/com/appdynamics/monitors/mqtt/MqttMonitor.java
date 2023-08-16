@@ -12,8 +12,8 @@ import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.appdynamics.extensions.ABaseMonitor;
 import com.appdynamics.extensions.TasksExecutionServiceProvider;
-import com.appdynamics.extensions.metrics.DeltaMetricsCalculator;
 import com.appdynamics.extensions.util.AssertUtils;
+
 
 import com.appdynamics.monitors.mqtt.config.Configuration;
 import com.appdynamics.monitors.mqtt.config.MetricTopic;
@@ -35,12 +35,8 @@ import static com.appdynamics.monitors.mqtt.Constant.*;
  */
 public class MqttMonitor extends ABaseMonitor {
 
-    public static final String CONFIG_ARG = "config-file";
+
     public static final Logger logger = ExtensionsLoggerFactory.getLogger(MqttMonitor.class);
-    public static final String METRICS_COLLECTION_SUCCESSFUL = "Metrics Collection Successful";
-    public static final String FAILED = "0";
-    public static final String SUCCESS = "1";
-    private volatile boolean initialized;
     private MonitorContextConfiguration monitorContextConfiguration;
     private Map<String, ?> configYml = Maps.newHashMap();
     private Configuration config;
@@ -101,6 +97,7 @@ public class MqttMonitor extends ABaseMonitor {
         }
     }
     private Configuration getConfig(){
+        //decrypt.decrypt(server.get)
         if(this.config != null){
             return this.config;
         }
@@ -150,7 +147,7 @@ public class MqttMonitor extends ABaseMonitor {
                 }
 
                 metricTopics.add(metricTopic);
-                logger.debug("Metric Topic configuration added: "+metricTopic.toString());
+                logger.debug("Metric Topic configuration added: "+ metricTopic);
             }
             single_server.setTopics(metricTopics);
             server_arr.add(single_server);

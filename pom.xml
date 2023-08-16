@@ -27,6 +27,13 @@
     </properties>
 
     <dependencies>
+        <!--<dependency>
+            <groupId>com.appdynamics</groupId>
+            <artifactId>machine-agent</artifactId>
+            <scope>system</scope>
+            <version>23.7.0.3689</version>
+            <systemPath>${project.basedir}/lib/machineagent.jar</systemPath>
+        </dependency>-->
         <dependency>
             <groupId>com.appdynamics</groupId>
             <artifactId>machineagent-repackaged</artifactId>
