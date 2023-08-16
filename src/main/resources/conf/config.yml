@@ -10,7 +10,6 @@ servers:
   #"MQTT broker URI to connect to. tcp://127.0.0.1:port(1883).
   #Use ws:// for Websockets, wss:// for secure Websockets and ssl:// for TLS encrypted TCP connections."
   - host: "tcp://127.0.0.1:1883"
-    verbose: true
     displayName: "localhost_test1" #will be used in metric browser so make sure unique
     clientID: "localtest_1" #unique id for client, if empty uses displayName and timestamp and append metric name
     keepAlive: 60 #keep alive in seconds, if nothing set 60 is default

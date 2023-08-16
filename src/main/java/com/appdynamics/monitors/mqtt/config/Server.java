@@ -26,20 +26,7 @@ public class Server {
     private Boolean automaticReconnect;
     private Boolean cleanSession;
 
-    private Boolean verbose;
-
     private ArrayList<MetricTopic> topics;
-
-    public boolean getVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-    public boolean hasVerbose() {
-        return this.verbose != null;
-    }
 
     public String getHost() {
         return host;
