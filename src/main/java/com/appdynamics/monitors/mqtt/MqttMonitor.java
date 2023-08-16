@@ -107,7 +107,6 @@ public class MqttMonitor extends ABaseMonitor {
         for (Map<String, ?> server : map_servers) {
             Server single_server = new Server() {{
                 setHost((String) server.get(CFG_HOST));
-                setVerbose((Boolean) server.get(CFG_VERBOSE));
                 setDisplayName((String) server.get(CFG_DISPLAY_NAME));
                 setClientID((String) server.get(CFG_CLIENT_ID));
                 setKeepAlive((Integer) server.get(CFG_KEEP_ALIVE));

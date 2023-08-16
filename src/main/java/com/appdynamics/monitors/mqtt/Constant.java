@@ -12,7 +12,6 @@ public class Constant {
     public static final String CFG_DISPLAY_NAME = "displayName";
     public static final String CFG_SERVERS = "servers";
     public static final String CFG_HOST = "host";
-    public static final String CFG_VERBOSE = "verbose";
     public static final String CFG_CLIENT_ID = "clientID";
     public static final String CFG_METRIC_PREFIX = "metricPrefix";
     public static final String CFG_TIMEOUT = "timeout";
