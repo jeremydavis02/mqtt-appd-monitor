@@ -28,10 +28,9 @@ public class MqttV5Executor implements MqttCallback {
     Server server; //to store server config reference
     MetricTopic metricTopic; //to store topic config reference
     MetricWriter metricWriter;
-
     MqttAsyncClient v5Client;
     Mode mode;
-    private final long actionTimeout;
+    private long actionTimeout;
 
     // To allow for a graceful disconnect
     final Thread mainThread = Thread.currentThread();
@@ -52,11 +51,14 @@ public class MqttV5Executor implements MqttCallback {
     public MqttV5Executor(ABaseMonitor monitor, Server serverConfig, MetricTopic metricTopic, Mode mode, long actionTimeout) {
 
         this.connectionParams = new MqttV5Connection(serverConfig, metricTopic);
-
+        /*if (mode == Mode.PUB) {
+            this.publishParams = new MqttV5Publish(commandLineParams);
+        }*/
         if (mode == Mode.SUB) {
             this.subscribeParams = metricTopic.getSubscribeObj();
         }
-
+        //this.debug = serverConfig.getVerbose();
+        //this.quiet = false; //I don't think we want no error printing
         this.mode = mode;
         this.actionTimeout = actionTimeout;
         //hold on to server and metric config references
@@ -113,9 +115,7 @@ public class MqttV5Executor implements MqttCallback {
      * Log a message to the console, nothing fancy.
      *
      * @param message
-     *            - The string to log
      * @param severity
-     *            - The severity string 'debug' or 'error'
      */
     private void logMessage(String message, String severity) {
         if (severity.equalsIgnoreCase("debug")) {
@@ -133,7 +133,11 @@ public class MqttV5Executor implements MqttCallback {
      */
     public void addShutdownHook() {
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> keepRunning = false));
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                keepRunning = false;
+            }
+        });
     }
 
     private void disconnectClient() throws MqttException {
@@ -160,7 +164,7 @@ public class MqttV5Executor implements MqttCallback {
 
     @Override
     public void disconnected(MqttDisconnectResponse disconnectResponse) {
-        String cause;
+        String cause = null;
         if (disconnectResponse.getException().getMessage() != null) {
             cause = disconnectResponse.getException().getMessage();
         } else {
@@ -183,27 +187,21 @@ public class MqttV5Executor implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        try {
-            String messageContent = new String(message.getPayload());
-            //Unfortunately we get floats conversion will lose precision
-            Float f = Float.valueOf(messageContent);
-            Long l = f.longValue();
-            logMessage("Message arrived on Topic: '" + topic + "' MessageContent: '" + messageContent + "' with length: " + messageContent.length(), "debug");
-            //in theory on continuous running each instance of this executor should be able to do a metric writer call here
-            if (this.metricTopic.getMetric_delta()) {
-                //this is a delta calculation
-                l = this.metricTopic.getDeltaMetricsCalculator()
-                        .calculateDelta(this.metricTopic.getMetricPath(), BigDecimal.valueOf(l))
-                        .longValue();
-                logMessage("Topic: '" + topic + "' is a delta metric with calculated delta with value of:" + l, "debug");
-            }
+        String messageContent = new String(message.getPayload());
+        //Unfortunately we get floats conversion will lose precision
+        Float f = Float.valueOf(messageContent);
+        Long l = f.longValue();
+        logMessage("Message arrived on Topic: '"+topic+"' MessageContent: '"+messageContent+"' with length: "+messageContent.length(), "debug");
+        //in theory on continuous running each instance of this executor should be able to do a metric writer call here
+        if(this.metricTopic.getMetric_delta()){
+            //this is a delta calculation
+            l = this.metricTopic.getDeltaMetricsCalculator()
+                    .calculateDelta(this.metricTopic.getMetricPath(), BigDecimal.valueOf(l))
+                    .longValue();
+            logMessage("Topic: '"+topic+"' is a delta metric with calculated delta with value of:" + l.toString(), "debug");
+        }
 
-            this.metricWriter.printMetric(l.toString());
-        }
-        catch (Exception e){
-            logMessage(e.getMessage(),"error");
-            throw e;
-        }
+        this.metricWriter.printMetric(l.toString());
 
     }
 
