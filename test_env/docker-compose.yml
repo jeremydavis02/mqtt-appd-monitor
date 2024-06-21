@@ -1,0 +1,18 @@
+version: '3'
+services:
+  appd_machine:
+    build:
+      context: .
+      dockerfile: machine_with_extension/machine-Dockerfile
+    container_name: machine_agent
+    hostname: machine_agent
+    environment:
+      - APPDYNAMICS_AGENT_APPLICATION_NAME=mqtt-machine-agent-test
+      - APPDYNAMICS_AGENT_TIER_NAME=MQTT-MA
+      - APPDYNAMICS_AGENT_NODE_NAME=MQTT_MACHINE
+    #platform: linux/amd64
+
+    #shouldn't need any env variables for this since controller info
+    volumes:
+      - ./ma_logs:/opt/appdynamics/logs
+      #- /var/run/docker.sock:/var/run/docker.sock
