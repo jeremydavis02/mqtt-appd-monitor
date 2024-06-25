@@ -94,11 +94,11 @@ public class MqttV5Executor implements MqttCallback {
                 IMqttToken subToken = this.v5Client.subscribe(subscribeParams.getTopic(), subscribeParams.getQos());
                 subToken.waitForCompletion(actionTimeout);
                 addShutdownHook();
-                while(keepRunning) {
+                /*while(keepRunning) {
                     // Do nothing
                 }
                 disconnectClient();
-                closeClientAndExit();
+                closeClientAndExit();*/
             }
 
         } catch (MqttException ex) {
@@ -135,7 +135,10 @@ public class MqttV5Executor implements MqttCallback {
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                keepRunning = false;
+                try{ disconnectClient(); }
+                catch (MqttException ex){
+                    logMessage("Shutdown Exception: {}", ex.getMessage());
+                }
             }
         });
     }

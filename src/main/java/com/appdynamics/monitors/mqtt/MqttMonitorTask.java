@@ -56,12 +56,12 @@ public class MqttMonitorTask implements AMonitorTaskRunnable {
                 //messages
                 logger.debug("Creating subscriber for topic: "+topic.toString());
                 MqttV5Executor mqttV5Executor = new MqttV5Executor(this.monitor, this.server, topic, Mode.SUB, this.config.getTimeout());
-                Thread t = new Thread(mqttV5Executor::execute);
-                //mqttV5Executor.execute();
-                t.start();
+                //Thread t = new Thread(mqttV5Executor::execute);
+                mqttV5Executor.execute();
+                //t.start();
                 logger.debug("Topic subscriber started: "+topic.toString());
                 this.topic_listeners.add(mqttV5Executor);
-                this.topic_threads.add(t);
+                //this.topic_threads.add(t);
             }
         } catch (Exception e) {
             logger.error("Unable to collect mqtt metrics ", e);
