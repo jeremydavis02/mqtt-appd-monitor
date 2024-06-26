@@ -2,23 +2,13 @@ package com.appdynamics.monitors.mqtt;
 
 import com.appdynamics.extensions.ABaseMonitor;
 import com.appdynamics.extensions.AMonitorTaskRunnable;
-import com.appdynamics.extensions.MetricWriteHelper;
 import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.appdynamics.monitors.mqtt.config.Configuration;
 import com.appdynamics.monitors.mqtt.config.MetricTopic;
 import com.appdynamics.monitors.mqtt.config.Server;
-import com.appdynamics.extensions.metrics.DeltaMetricsCalculator;
-
 import org.slf4j.Logger;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-
-import static com.appdynamics.monitors.mqtt.Constant.*;
 import static com.appdynamics.monitors.mqtt.Constant.METRIC_SEPARATOR;
 
 public class MqttMonitorTask implements AMonitorTaskRunnable {
